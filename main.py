@@ -20,8 +20,9 @@ def show_text(text: str) -> None:
     )
 
     w, h = font.getsize(text)
-    x = (inkyphat.WIDTH / 2) - (w / 2)
-    y = 51 - (h / 2)
+    # TODO: Set dynamically.
+    x = 14 
+    y = 19
 
     inkyphat.text((x, y), text, inkyphat.BLACK, font=font)
     inkyphat.show()
