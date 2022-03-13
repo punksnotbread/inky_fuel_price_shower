@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 import inkyphat
@@ -26,37 +27,43 @@ def show_text(text: str) -> None:
     inkyphat.show()
 
 
-def format_text(text: str) -> str:
-    if "Kaina" in text:
-        text = text.split("Kaina")[-1].strip()
-        return f"95: {text}"
-    return text
+def format_text(data: list[dict]) -> str:
+    return "\n".join(f"{entry['type']}: {entry['price']}€" for entry in data)
 
 
-def parse_element(html: str, xpath: str) -> Optional[str]:
+def parse_prices(el: etree.Element) -> dict[str, str]:
+    return {
+        "type": el.xpath(".//th/text()")[0],
+        "price": el.xpath(".//td/b/text()")[0],
+    }
+
+
+def parse_element(html: str, xpath: str) -> list[dict]:
     tree = etree.HTML(html)
-    el = tree.xpath(xpath)
-    if el:
-        return el[0]
+    return [parse_prices(element) for element in tree.xpath(xpath)]
 
 
 def get_html(url: str) -> Optional[str]:
-    response = requests.get(url)
+    ua = (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+    )
+    headers = {"user-agent": ua}
+    response = requests.get(url, headers=headers)
     if response.ok:
         return response.text
+    raise Exception(f"Could not scrape website, response {response}")
 
 
 def main():
-    url = (
-        "https://pricer.lt/tyrimai/preke/"
-        "pigiausias-a95-oktaninio-skaiciaus-benzinas/53"
-    )
+    now = datetime.now()
+    url = "https://degalu-kainos.lt/"
     html = get_html(url)
-    price_path = './/span[@class="product-price"]/span/text()'
-    text = "Failed getting prices"
-    if html:
-        text = parse_element(html, price_path)
+    price_path = './/div[@id="content"]//tr[contains(.//th/text(), "Benz")]'
+
+    text = parse_element(html, price_path)
     text = format_text(text)
+    text += f"\n{str(now)[:19]}"
     show_text(text)
 
 
