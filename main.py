@@ -28,18 +28,18 @@ def show_text(text: str) -> None:
     inkyphat.show()
 
 
-def format_text(data: list[dict]) -> str:
+def format_text(data: list) -> str:
     return "\n".join(f"{entry['type']}: {entry['price']}€" for entry in data)
 
 
-def parse_prices(el: etree.Element) -> dict[str, str]:
+def parse_prices(el: etree.Element) -> dict:
     return {
         "type": el.xpath(".//th/text()")[0],
         "price": el.xpath(".//td/b/text()")[0],
     }
 
 
-def parse_element(html: str, xpath: str) -> list[dict]:
+def parse_element(html: str, xpath: str) -> list:
     tree = etree.HTML(html)
     return [parse_prices(element) for element in tree.xpath(xpath)]
 
